@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATS Resume Scanner – Upload & Analyze Your Resume</title>
+  <meta name="description" content="Upload your resume and select a job role to instantly get your ATS match score, matched skills, and missing keywords."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">ATS<span class="accent">Scanner</span></span>
+  </div>
+  <div class="nav-badge">AI-Powered · No JS</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">🎯 Beat The Bots</div>
+  <h1 class="hero-title">Resume <span class="gradient-text">ATS Scanner</span></h1>
+  <p class="hero-sub">Upload your resume and select your target job role — get your ATS match score, skill gaps, and actionable tips in seconds.</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">20+</span><span class="stat-label">Job Roles</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num">PDF</span><span class="stat-label">DOCX · TXT</span></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><span class="stat-num">Free</span><span class="stat-label">Always</span></div>
+  </div>
+</section>
+
+<!-- FLASH MESSAGES -->
+{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}
+    <div class="container">
+      {% for cat, msg in msgs %}
+        <div class="flash flash-{{ cat }}">⚠️ {{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- MAIN FORM -->
+<main class="container">
+  <div class="card main-card">
+    <div class="card-header">
+      <div class="step-badge">Upload · Select Role · Analyze</div>
+      <h2>Scan Your Resume</h2>
+      <p>Supports PDF, DOCX and TXT. Your file never leaves the server.</p>
+    </div>
+
+    <form method="POST" action="/analyze" enctype="multipart/form-data">
+
+      <!-- File Upload -->
+      <div class="upload-section">
+        <label class="input-label" for="resume_file">
+          <span class="label-icon">📄</span> Resume File
+          <span class="label-hint">PDF · DOCX · TXT</span>
+        </label>
+        <label class="upload-zone" for="resume_file">
+          <!-- Idle state -->
+          <div class="upload-idle">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">
+              <strong>Click to choose your resume</strong>
+              <span>Drag &amp; drop or click to browse</span>
+            </div>
+            <div class="upload-formats">PDF · DOCX · TXT · Max 5 MB</div>
+          </div>
+          <!-- Success state — shown via CSS :has(:valid) -->
+          <div class="upload-success">
+            <div class="upload-check">✅</div>
+            <div class="upload-text">
+              <strong>File uploaded successfully!</strong>
+              <span>Your resume is ready to analyze</span>
+            </div>
+          </div>
+          <input type="file" id="resume_file" name="resume_file"
+                 accept=".pdf,.docx,.txt,.text" required/>
+        </label>
+      </div>
+
+      <!-- Job Role -->
+      <div class="input-group" style="margin-top:28px;">
+        <label class="input-label" for="job_role">
+          <span class="label-icon">💼</span> Target Job Role
+        </label>
+
+        <!-- Dropdown of known roles -->
+        <select id="job_role" name="job_role" class="role-select" required>
+          <option value="" disabled selected>— Select a job role —</option>
+          {% for role in roles %}
+            <option value="{{ role }}">{{ role | title }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- OR custom role -->
+        <p class="or-divider">or type a custom role below</p>
+        <input type="text" id="job_role_custom" name="job_role_custom"
+               class="role-input" placeholder="e.g. Django Developer, NLP Engineer…"/>
+      </div>
+
+      <div class="btn-row" style="margin-top:28px;">
+        <button type="submit" class="btn-primary" id="analyze-btn">
+          <span class="btn-icon">🔍</span>
+          <span class="btn-label">Analyze My Resume</span>
+          <span class="btn-arrow">→</span>
+        </button>
+        <a href="/" class="btn-ghost">Clear</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="card how-card">
+    <h3 class="how-title">How it works</h3>
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>Upload Resume</strong>
+          <span>PDF, DOCX or TXT</span>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>Select Job Role</strong>
+          <span>20+ roles available</span>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>Get ATS Score</strong>
+          <span>Match % + skill gaps</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AVAILABLE ROLES -->
+  <div class="card roles-card">
+    <h3 class="how-title">Supported Job Roles</h3>
+    <div class="roles-cloud">
+      {% for role in roles %}
+        <span class="role-chip">{{ role | title }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>Built with ❤️ using Python &amp; Flask · <span class="accent">ATS Scanner v2.0</span></p>
+</footer>
+
+</body>
+</html>

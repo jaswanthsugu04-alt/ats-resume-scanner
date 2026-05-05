@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATS Results – {{ r.score }}% Match · ATS Scanner</title>
+  <meta name="description" content="Your ATS resume match score is {{ r.score }}%. See matched skills and missing keywords."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+<div class="bg-orb orb3"></div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">ATS<span class="accent">Scanner</span></span>
+  </div>
+  <a href="/" class="nav-badge" style="text-decoration:none; cursor:pointer;">← New Scan</a>
+</nav>
+
+<main class="container" style="padding-top:40px;">
+
+  <!-- SCORE CARD -->
+  <div class="card score-card">
+    <div class="score-left">
+      <!-- SVG Ring — computed server-side, no JS -->
+      <div class="score-ring-wrap">
+        <svg class="score-ring" viewBox="0 0 140 140">
+          <circle class="ring-bg"   cx="70" cy="70" r="56"/>
+          <circle class="ring-fill {{ r.grade_css }}"
+                  cx="70" cy="70" r="56"
+                  stroke-dasharray="352"
+                  stroke-dashoffset="{{ r.dash_offset }}"/>
+        </svg>
+        <div class="score-center">
+          <span class="score-num">{{ r.score | int }}</span>
+          <span class="score-pct">%</span>
+        </div>
+      </div>
+      <div class="score-meta">
+        <div class="grade-badge {{ r.grade_css }}">{{ r.grade }}</div>
+        <p class="score-label">ATS Match Score</p>
+        <p class="filename-label">📄 {{ r.filename }}</p>
+      </div>
+    </div>
+
+    <div class="score-right">
+      <h3 class="rec-title">💡 Recommendation</h3>
+      <p class="rec-text">{{ r.recommendation }}</p>
+      <div class="kw-counts">
+        <div class="kw-count">
+          <span class="kw-icon">✅</span>
+          <div>
+            <span class="kw-num">{{ r.matched_count }}</span>
+            <span class="kw-lbl">Matched</span>
+          </div>
+        </div>
+        <div class="kw-count">
+          <span class="kw-icon">❌</span>
+          <div>
+            <span class="kw-num">{{ r.missing_count }}</span>
+            <span class="kw-lbl">Missing</span>
+          </div>
+        </div>
+        <div class="kw-count">
+          <span class="kw-icon">📊</span>
+          <div>
+            <span class="kw-num">{{ r.total_job_kw }}</span>
+            <span class="kw-lbl">JD Keywords</span>
+          </div>
+        </div>
+        <div class="kw-count">
+          <span class="kw-icon">📝</span>
+          <div>
+            <span class="kw-num">{{ r.resume_words }}</span>
+            <span class="kw-lbl">Resume Words</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIORITY MISSING -->
+  {% if r.top_missing %}
+  <div class="card">
+    <div class="section-header">
+      <h3>🚨 Priority Keywords to Add</h3>
+      <p>Highest-frequency job description keywords missing from your resume — add these first.</p>
+    </div>
+    <div class="tag-cloud">
+      {% for kw in r.top_missing %}
+        <span class="tag miss-priority">{{ kw }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- MATCHED SKILLS -->
+  <div class="card">
+    <div class="section-header">
+      <h3>✅ Matched Skills &amp; Keywords</h3>
+      <p>These keywords from the job description are already present in your resume.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-col">
+        <h4 class="col-title tech">⚙️ Technical</h4>
+        <div class="tag-cloud">
+          {% if r.matched_tech %}
+            {% for kw in r.matched_tech %}<span class="tag match">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None detected</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="skill-col">
+        <h4 class="col-title soft">🤝 Soft Skills</h4>
+        <div class="tag-cloud">
+          {% if r.matched_soft %}
+            {% for kw in r.matched_soft %}<span class="tag match">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None detected</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="skill-col">
+        <h4 class="col-title other">📝 Other</h4>
+        <div class="tag-cloud">
+          {% if r.matched_other %}
+            {% for kw in r.matched_other %}<span class="tag match">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None detected</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSING SKILLS -->
+  <div class="card">
+    <div class="section-header">
+      <h3>❌ Missing Keywords</h3>
+      <p>Weave these into your resume naturally — don't just list them.</p>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-col">
+        <h4 class="col-title tech">⚙️ Technical</h4>
+        <div class="tag-cloud">
+          {% if r.missing_tech %}
+            {% for kw in r.missing_tech %}<span class="tag miss">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None — great!</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="skill-col">
+        <h4 class="col-title soft">🤝 Soft Skills</h4>
+        <div class="tag-cloud">
+          {% if r.missing_soft %}
+            {% for kw in r.missing_soft %}<span class="tag miss">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None — great!</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="skill-col">
+        <h4 class="col-title other">📝 Other</h4>
+        <div class="tag-cloud">
+          {% if r.missing_other %}
+            {% for kw in r.missing_other %}<span class="tag miss">{{ kw }}</span>{% endfor %}
+          {% else %}
+            <span class="tag-empty">None — great!</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div class="card tips-card">
+    <h3>🛠 Quick-Win Tips to Boost Your Score</h3>
+    <ul class="tips-list">
+      <li><span class="tip-icon">1</span>Mirror the <strong>exact wording</strong> used in the job description.</li>
+      <li><span class="tip-icon">2</span>Add a dedicated <strong>Skills</strong> section listing technical keywords.</li>
+      <li><span class="tip-icon">3</span>Quantify achievements: <em>"Improved performance by 30%"</em> beats vague statements.</li>
+      <li><span class="tip-icon">4</span>Use both the full form and acronym — e.g. <em>"Machine Learning (ML)"</em>.</li>
+      <li><span class="tip-icon">5</span>Tailor your <strong>Summary / Objective</strong> section for each role.</li>
+    </ul>
+  </div>
+
+  <!-- SCAN AGAIN -->
+  <div class="btn-row center" style="padding-bottom:48px;">
+    <a href="/" class="btn-primary" style="text-decoration:none;">
+      <span class="btn-icon">🔄</span>
+      <span class="btn-label">Scan Another Resume</span>
+      <span class="btn-arrow">→</span>
+    </a>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>Built with ❤️ using Python &amp; Flask · <span class="accent">ATS Scanner v2.0</span></p>
+</footer>
+
+</body>
+</html>
